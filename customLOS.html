@@ -464,7 +464,7 @@ function hasLineOfSight(x1, y1, x2, y2) {
             var yTileNew=yTile+Math.sign(dy);
             reldist=distancetoslope(x1,y1,x2,y2,xTile,yTileNew)-distancetoslope(x1,y1,x2,y2,xTileNew,yTile);
             if (Math.abs(reldist)==0) {
-		if (xTileNew === xTile) {
+		/*if (xTileNew === xTile) {
 			if ((getTileFlag(xTileNew, yTile) & xMask) !== 0) {
 				return false;
 			}
@@ -476,10 +476,10 @@ function hasLineOfSight(x1, y1, x2, y2) {
 			if (((getTileFlag(xTileNew, yTileNew) & xMask) !== 0)||((getTileFlag(xTileNew, yTileNew) & yMask) !== 0)) {
 				return false;
 			}
-		}
-                /*if (((((getTileFlag(xTile, yTileNew) & yMask) !== 0)||((getTileFlag(xTileNew, yTile) & xMask) !== 0))||((getTileFlag(xTileNew, yTileNew) & xMask) !== 0))||((getTileFlag(xTileNew, yTileNew) & yMask) !== 0)) {
+		}*/
+                if (((((getTileFlag(xTile, yTileNew) & yMask) !== 0)||((getTileFlag(xTileNew, yTile) & xMask) !== 0))||((getTileFlag(xTileNew, yTileNew) & xMask) !== 0))||((getTileFlag(xTileNew, yTileNew) & yMask) !== 0)) {
                     return false;
-                }*/
+                }
                 yTile=yTileNew
                 xTile=xTileNew
             } else if (reldist<0) {
@@ -495,6 +495,7 @@ function hasLineOfSight(x1, y1, x2, y2) {
             }
         }
         return true;
+	
     }
 }
 function distancetoslope(x1,y1,x2,y2,xTile,yTile) {
