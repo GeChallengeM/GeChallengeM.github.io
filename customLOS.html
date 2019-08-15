@@ -367,11 +367,11 @@ function drawMap() {
     }
 }
 function hasLineOfSight(x1, y1, x2, y2) {
+    if (mechanics == 0) {
     var dx = x2 - x1;
     var dxAbs = Math.abs(dx);
     var dy = y2 - y1;
     var dyAbs = Math.abs(dy);
-    if (mechanics == 0) {
     if (dxAbs > dyAbs) {
         var xTile = x1;
         var y = y1 << 16;
@@ -446,7 +446,11 @@ function hasLineOfSight(x1, y1, x2, y2) {
     }
     return true;
     }
-    else {
+    else if (mechanics == 1) {
+        var dx = x2 - x1;
+        var dxAbs = Math.abs(dx);
+        var dy = y2 - y1;
+        var dyAbs = Math.abs(dy);
         xTile = x1;
         yTile = y1;
         if (dy > 0) {
@@ -495,7 +499,127 @@ function hasLineOfSight(x1, y1, x2, y2) {
             }
         }
         return true;
-	
+    }
+    else {
+    if (x1 > x2) {
+			let tempX2 = x2, tempY2 = y2;
+			x2 = x1;
+			y2 = y1;
+			x1 = tempX2;
+			y1 = tempY2;
+		}
+    var dx = x2 - x1;
+    var dxAbs = Math.abs(dx);
+    var dy = y2 - y1;
+    var dyAbs = Math.abs(dy);
+    if (dxAbs > dyAbs) {
+        var xTile = x1;
+        var y = y1 << 16;
+        var slope = Math.trunc((dy << 16) / dxAbs); // Integer division
+        
+        var xInc;
+        var xMask;
+        if (dx > 0) {
+            xInc = 1;
+            xMask = LOS_WEST_MASK | LOS_FULL_MASK;
+        } else {
+            xInc = -1;
+            xMask = LOS_EAST_MASK | LOS_FULL_MASK;
+        }
+        var yMask;
+        y += 0x8000;
+        if (dy < 0) {
+            y -= 1; // For correct rounding
+            yMask = LOS_NORTH_MASK | LOS_FULL_MASK;
+        } else {
+            yMask = LOS_SOUTH_MASK | LOS_FULL_MASK;
+        }
+        
+        while (xTile !== x2) {
+            xTile += xInc;
+            var yTile = y >>> 16;
+            if ((getTileFlag(xTile, yTile) & xMask) !== 0) {
+                return false;
+            }
+            y += slope;
+            var newYTile = y >>> 16;
+            if (newYTile !== yTile && (getTileFlag(xTile, newYTile) & yMask) !== 0) {
+                return false;
+            }
+        }
+    } else if (dxAbs < dyAbs) {
+        var yTile = y1;
+        var x = x1 << 16;
+        var slope = Math.trunc((dx << 16) / dyAbs); // Integer division
+        
+        var yInc;
+        var yMask;
+        if (dy > 0) {
+            yInc = 1;
+            yMask = LOS_SOUTH_MASK | LOS_FULL_MASK;
+        } else {
+            yInc = -1;
+            yMask = LOS_NORTH_MASK | LOS_FULL_MASK;
+        }
+        
+        var xMask;
+        x += 0x8000;
+        if (dx < 0) {
+            x -= 1; // For correct rounding
+            xMask = LOS_EAST_MASK | LOS_FULL_MASK;
+        } else {
+            xMask = LOS_WEST_MASK | LOS_FULL_MASK;
+        }
+        
+        while (yTile !== y2) {
+            yTile += yInc;
+            var xTile = x >>> 16;
+            if ((getTileFlag(xTile, yTile) & yMask) !== 0) {
+                return false;
+            }
+            x += slope;
+            var newXTile = x >>> 16;
+            if (newXTile !== xTile && (getTileFlag(newXTile, yTile) & xMask) !== 0) {
+                return false;
+            }
+        }
+    } else {
+        var yTile = y1;
+        var xTile = x1
+        var slope = Math.trunc((dx << 16) / dyAbs); // Integer division
+        
+        var yInc;
+        var yMask;
+        if (dy > 0) {
+            yInc = 1;
+            yMask = LOS_SOUTH_MASK | LOS_FULL_MASK;
+        } else {
+            yInc = -1;
+            yMask = LOS_NORTH_MASK | LOS_FULL_MASK;
+        }
+        
+        var xMask;
+        var xInc;
+        if (dx < 0) {
+            xInc = -1;
+            xMask = LOS_EAST_MASK | LOS_FULL_MASK;
+        } else {
+	    xInc = 1;
+            xMask = LOS_WEST_MASK | LOS_FULL_MASK;
+        }
+        
+        while (yTile !== y2) {
+            if ((((getTileFlag(xTile, yTile+yInc) & yMask) !== 0)||((getTileFlag(xTile+xInc, yTile+yInc) & xMask) !== 0))&&(((getTileFlag(xTile+xInc, yTile) & xMask) !== 0)||((getTileFlag(xTile+xInc, yTile+yInc) & yMask) !== 0))) {
+                return false;
+            }
+	    xTile += xInc;
+	    yTile += yInc;
+            if (newXTile !== xTile && (getTileFlag(newXTile, yTile) & xMask) !== 0) {
+                return false;
+            }
+        }
+    }
+    return true;
     }
 }
 function distancetoslope(x1,y1,x2,y2,xTile,yTile) {
@@ -700,7 +824,8 @@ var rDrawColorA;
 <label><input type="radio" name="map" onclick="setInferno()">Inferno</label><br>
 <br>
 <label><input type="radio" name="mechanics" onclick="setMechanics(0)" checked="">Current mechanics</label>
-<label><input type="radio" name="mechanics" onclick="setMechanics(1)">Proposed mechanics</label>
+<label><input type="radio" name="mechanics" onclick="setMechanics(2)">New mechanics</label>
+<label><input type="radio" name="mechanics" onclick="setMechanics(1)">GeChallengeM's mechanics</label>
 <br><br>
 <label><input type="radio" name="action" onclick="setAction(1)" checked="">Place player/NPC</label>
 <label><input type="radio" name="action" onclick="setAction(0)">Place empty tile</label>
