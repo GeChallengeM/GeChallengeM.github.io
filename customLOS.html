@@ -103,6 +103,8 @@ function onMouseDown(e) {
             selectedTileX = Math.trunc((e.clientX - canvasRect.left) / rrTileSize);
             selectedTileY = Math.trunc((canvasRect.bottom - 1 - e.clientY) / rrTileSize);
             break;
+	case 0:
+	    currentMap[Math.trunc((e.clientX - canvasRect.left) / rrTileSize) + Math.trunc((canvasRect.bottom - 1 - e.clientY) / rrTileSize) * 64] = 0;
         case action:
             currentMap[Math.trunc((e.clientX - canvasRect.left) / rrTileSize) + Math.trunc((canvasRect.bottom - 1 - e.clientY) / rrTileSize) * 64] = currentMap[Math.trunc((e.clientX - canvasRect.left) / rrTileSize) + Math.trunc((canvasRect.bottom - 1 - e.clientY) / rrTileSize) * 64] | action;
             break;
